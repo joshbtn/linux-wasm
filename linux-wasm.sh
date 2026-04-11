@@ -175,6 +175,13 @@ case "$1" in # note use of ;;& meaning that each case is re-tested (can hit mult
                 $LW_KERNEL_MAKE "${LW_VARIANT}_defconfig"
                 $LW_KERNEL_MOD_CONFIG "$LW_BUILD_KERNEL/.config" --enable CONFIG_WERROR
                 $LW_KERNEL_MAKE olddefconfig
+            elif [ "$LW_KERNEL_CONFIG" == "kunit" ]; then
+                $LW_KERNEL_MAKE "${LW_VARIANT}_defconfig" ../../../tools/testing/kunit/configs/all_tests.config
+
+                # These tests are probably OK but take a very long time to complete and also overflow the kernel log.
+                $LW_KERNEL_MOD_CONFIG "$LW_BUILD_KERNEL/.config" --undefine CONFIG_SND_SOC
+
+                $LW_KERNEL_MAKE olddefconfig
             elif [ "$LW_KERNEL_CONFIG" == "" ]; then
                 $LW_KERNEL_MAKE "${LW_VARIANT}_defconfig"
             else
