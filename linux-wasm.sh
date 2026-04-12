@@ -175,6 +175,17 @@ case "$1" in # note use of ;;& meaning that each case is re-tested (can hit mult
                 $LW_KERNEL_MAKE "${LW_VARIANT}_defconfig"
                 $LW_KERNEL_MOD_CONFIG "$LW_BUILD_KERNEL/.config" --enable CONFIG_WERROR
                 $LW_KERNEL_MAKE olddefconfig
+            elif [ "$LW_KERNEL_CONFIG" == "ubsan" ]; then
+                $LW_KERNEL_MAKE "${LW_VARIANT}_defconfig"
+                $LW_KERNEL_MOD_CONFIG "$LW_BUILD_KERNEL/.config" --enable CONFIG_UBSAN
+                $LW_KERNEL_MAKE olddefconfig
+
+                # This does not work well as the kernel likes to allocate memory that does not honor
+                # e.g. ___cacheline_aligned and thus UBSAN errors blow up all over the place. These
+                # are correct marked: it is UB to place a struct unaligned into memory. Since the
+                # memory will be sufficiently aligned for trapping instructions (like unaligned
+                # atomics) the code will probably still work, i.e. it will (probably) not trap.
+                $LW_KERNEL_MOD_CONFIG "$LW_BUILD_KERNEL/.config" --set-val CONFIG_UBSAN_ALIGNMENT n
             elif [ "$LW_KERNEL_CONFIG" == "kunit" ]; then
                 $LW_KERNEL_MAKE "${LW_VARIANT}_defconfig" ../../../tools/testing/kunit/configs/all_tests.config
 
